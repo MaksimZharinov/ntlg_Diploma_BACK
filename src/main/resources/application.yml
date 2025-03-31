@@ -1,0 +1,14 @@
+server:
+  port: 9090
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/netology
+    username: student
+    password: password
+    hikari:
+      maximum-pool-size: 10
+
+logging:
+  ru.netology: DEBUG
+  org.sprinframework.jdbc.core: DEBUG
