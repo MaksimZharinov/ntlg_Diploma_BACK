@@ -8,6 +8,10 @@ spring:
     password: password
     hikari:
       maximum-pool-size: 10
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
 
 logging:
   ru.netology: DEBUG
