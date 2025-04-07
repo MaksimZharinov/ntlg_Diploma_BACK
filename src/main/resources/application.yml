@@ -15,4 +15,4 @@ spring:
 
 logging:
   ru.netology: DEBUG
-  org.sprinframework.jdbc.core: DEBUG
+  org.springframework.jdbc.core: DEBUG
