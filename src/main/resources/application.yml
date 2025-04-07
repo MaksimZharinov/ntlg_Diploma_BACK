@@ -14,5 +14,9 @@ spring:
       continue-on-error: true
 
 logging:
-  ru.netology: DEBUG
-  org.springframework.jdbc.core: DEBUG
+  level:
+    ru.netology: DEBUG
+    org.springframework.jdbc.core: DEBUG
+  file:
+    name:
+      app.log
