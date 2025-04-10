@@ -23,14 +23,14 @@ public class ExceptionController {
 
     @ExceptionHandler(UnauthorizedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ErrorResponse handleUnauthorized(BadRequestException e) {
+    public ErrorResponse handleUnauthorized(UnauthorizedException e) {
         log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage(), 401);
     }
 
     @ExceptionHandler(ServerErrorException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleServerError(BadRequestException e) {
+    public ErrorResponse handleServerError(ServerErrorException e) {
         log.error(e.getMessage(), e);
         return new ErrorResponse(e.getMessage(), 500);
     }
