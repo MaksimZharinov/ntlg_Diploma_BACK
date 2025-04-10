@@ -24,31 +24,23 @@ public class AuthService {
     }
 
     public String login(LoginRequest loginRequest) {
-        try {
-            String dbPassword = authRepository
-                    .getPassword(loginRequest.getLogin());
-            if (dbPassword == null || dbPassword.isEmpty()) {
-                log.warn("User not found: {}",
-                        loginRequest.getLogin());
-                throw new BadRequestException(
-                        ErrorMessages.ERR_LOGIN.message);
-            }
-            String userPassword = passwordEncoder
-                    .encode(loginRequest.getPassword());
-            if (dbPassword.equals(userPassword)) {
-                String token = UUID.randomUUID().toString();
-                log.info("Generated token {} to user: {}",
-                        token, loginRequest.getLogin());
-                authRepository
-                        .saveToken(loginRequest.getLogin(), token);
-                return token;
-            }
-        } catch (BadRequestException e) {
-            throw new BadRequestException(e.getMessage());
+
+        String dbPassword = authRepository.getPassword(loginRequest.getLogin());
+
+        if (dbPassword == null || dbPassword.isEmpty()) {
+            log.warn("User not found: {}", loginRequest.getLogin());
+            throw new BadRequestException(ErrorMessages.ERR_LOGIN.message);
         }
-        log.warn("Something wrong in AuthService");
-        throw new BadRequestException(
-                ErrorMessages.ERR_LOGIN.message);
+
+        if (!passwordEncoder.matches(loginRequest.getPassword(), dbPassword)) {
+            log.warn("Invalid password for user: {}", loginRequest.getLogin());
+            throw new BadRequestException(ErrorMessages.ERR_LOGIN.message);
+        }
+
+        String token = UUID.randomUUID().toString();
+        log.info("Generated token {} for user: {}", token, loginRequest.getLogin());
+        authRepository.saveToken(loginRequest.getLogin(), token);
+        return token;
     }
 
     public void logout(String token) {
