@@ -3,8 +3,8 @@ package ru.netology.constant;
 public enum SqlQueries {
 
     //auth
-    CHECK_CREDENTIALS("SELECT COUNT(*) " +
-            "FROM netology.users WHERE login = ? AND password = ?"),
+    CHECK_PASSWORD("SELECT password " +
+            "FROM netology.users WHERE login = ?"),
 
     //token
     CREATE_TOKEN("INSERT INTO netology.auth_tokens " +
