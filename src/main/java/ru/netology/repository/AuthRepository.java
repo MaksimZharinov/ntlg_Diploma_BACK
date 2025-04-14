@@ -1,6 +1,8 @@
 package ru.netology.repository;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.netology.constant.ErrorMessages;
@@ -18,12 +20,16 @@ public class AuthRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public String getPassword(String login) throws UnauthorizedException {
+    public String getPassword(String login) {
         log.debug("Fetching password for user: {}", login);
         try {
             return jdbcTemplate.queryForObject(SqlQueries.CHECK_PASSWORD.query,
                     String.class, login);
-        } catch (Exception e) {
+        } catch (EmptyResultDataAccessException e) {
+            log.warn("User not found: {}", login);
+            throw new BadRequestException(ErrorMessages.ERR_LOGIN.message);
+        } catch (DataAccessException e) {
+            log.error("Database error while fetching password for user: {}", login, e);
             throw new BadRequestException(ErrorMessages.ERR_LOGIN.message);
         }
     }

@@ -26,12 +26,14 @@ public class TokenAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws IOException, ServletException {
-        String token = request.getHeader("auth-token");
-        log.debug("Checking token for URL: {}", request.getRequestURI());
 
         if (request.getRequestURI().equals("/login")) {
             filterChain.doFilter(request, response);
+            return;
         }
+
+        String token = request.getHeader("auth-token");
+        log.debug("Checking token for URL: {}", request.getRequestURI());
 
         if (token == null || !authRepository.checkToken(token)) {
             log.warn("Token not valid to URL: {}", request.getRequestURI());

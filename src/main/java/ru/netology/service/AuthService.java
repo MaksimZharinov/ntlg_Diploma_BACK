@@ -27,6 +27,9 @@ public class AuthService {
 
         String dbPassword = authRepository.getPassword(loginRequest.getLogin());
 
+        log.debug("DB Password: {}", dbPassword);
+        log.debug("Input Password: {}", loginRequest.getPassword());
+
         if (dbPassword == null || dbPassword.isEmpty()) {
             log.warn("User not found: {}", loginRequest.getLogin());
             throw new BadRequestException(ErrorMessages.ERR_LOGIN.message);
