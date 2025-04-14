@@ -13,6 +13,7 @@ public enum SqlQueries {
             "FROM netology.auth_tokens WHERE token = ?"),
     DROP_TOKEN("DELETE FROM netology.auth_tokens " +
             "WHERE token = ?"),
+    REFRESH_TOKEN("DELETE FROM auth_tokens WHERE user_name = ?"),
 
     //file
     GET_FILE("SELECT file_data, filename " +

@@ -25,10 +25,11 @@ public class AuthService {
 
     public String login(LoginRequest loginRequest) {
 
-        String dbPassword = authRepository.getPassword(loginRequest.getLogin());
+        authRepository.refreshToken(loginRequest.getLogin());
 
+        log.debug("Input password: {}", loginRequest.getPassword());
+        String dbPassword = authRepository.getPassword(loginRequest.getLogin());
         log.debug("DB Password: {}", dbPassword);
-        log.debug("Input Password: {}", loginRequest.getPassword());
 
         if (dbPassword == null || dbPassword.isEmpty()) {
             log.warn("User not found: {}", loginRequest.getLogin());
@@ -47,8 +48,10 @@ public class AuthService {
     }
 
     public void logout(String token) {
-        log.debug("Logging out token: {}", token);
-        authRepository.dropToken(token);
+        log.debug("Logout for token: {}", token);
+        if (!authRepository.dropToken(token)) {
+            log.warn("Token not found during logout: {}", token);
+        }
     }
 
     public boolean checkToken(String token) {

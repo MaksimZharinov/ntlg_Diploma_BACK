@@ -6,12 +6,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.netology.constant.ErrorMessages;
 import ru.netology.repository.AuthRepository;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -38,7 +42,16 @@ public class TokenAuthFilter extends OncePerRequestFilter {
         if (token == null || !authRepository.checkToken(token)) {
             log.warn("Token not valid to URL: {}", request.getRequestURI());
             response.sendError(401, ErrorMessages.ERR_TOKEN.message);
+            return;
+        } else {
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                    "token_user",
+                    null,
+                    List.of(new SimpleGrantedAuthority("VALID_TOKEN")) // Магическая строка
+            );
+            SecurityContextHolder.getContext().setAuthentication(auth);
         }
+
         filterChain.doFilter(request, response);
     }
 }

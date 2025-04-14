@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 import ru.netology.constant.ErrorMessages;
 import ru.netology.constant.SqlQueries;
 import ru.netology.error.BadRequestException;
-import ru.netology.error.UnauthorizedException;
 
 @Repository
 @Slf4j
@@ -46,9 +45,13 @@ public class AuthRepository {
         return count != null && count == 1;
     }
 
-    public void dropToken(String token) {
+    public boolean dropToken(String token) {
         log.debug("Deleting token: {}", token);
-        jdbcTemplate.update(SqlQueries.DROP_TOKEN.query, token);
+        return jdbcTemplate.update(SqlQueries.DROP_TOKEN.query, token) > 0;
+    }
+
+    public void refreshToken(String login) {
+        jdbcTemplate.update(SqlQueries.REFRESH_TOKEN.query, login);
     }
 }
 
