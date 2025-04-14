@@ -11,8 +11,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import ru.netology.constant.AuthRole;
 import ru.netology.constant.ErrorMessages;
+import ru.netology.dto.ErrorResponse;
 import ru.netology.repository.AuthRepository;
+import ru.netology.util.ResponseUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,6 +25,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TokenAuthFilter extends OncePerRequestFilter {
 
+    private final ErrorResponse errorResponse = new ErrorResponse(
+            ErrorMessages.ERR_TOKEN.message, 401);
     private final AuthRepository authRepository;
 
     @Override
@@ -40,14 +45,18 @@ public class TokenAuthFilter extends OncePerRequestFilter {
         log.debug("Checking token for URL: {}", request.getRequestURI());
 
         if (token == null || !authRepository.checkToken(token)) {
-            log.warn("Token not valid to URL: {}", request.getRequestURI());
-            response.sendError(401, ErrorMessages.ERR_TOKEN.message);
+            log.warn("Token INVALID for URL: {}", request.getRequestURI());
+            ResponseUtils.sendErrorResponse(
+                    response,
+                    errorResponse.getCode(),
+                    errorResponse.getMessage());
             return;
         } else {
+            log.debug("Token VALID for URL: {}", request.getRequestURI());
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
                     "token_user",
                     null,
-                    List.of(new SimpleGrantedAuthority("VALID_TOKEN")) // Магическая строка
+                    List.of(new SimpleGrantedAuthority(AuthRole.TOKEN.role))
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
         }

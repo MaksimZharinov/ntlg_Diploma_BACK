@@ -11,10 +11,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
-import org.springframework.security.web.authentication.AuthenticationFilter;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import ru.netology.constant.AuthRole;
 import ru.netology.constant.ErrorMessages;
+import ru.netology.dto.ErrorResponse;
 import ru.netology.filter.TokenAuthFilter;
+import ru.netology.util.ResponseUtils;
 
 @Slf4j
 @Configuration
@@ -22,6 +23,8 @@ import ru.netology.filter.TokenAuthFilter;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final ErrorResponse errorResponse = new ErrorResponse(
+            ErrorMessages.ERR_TOKEN.message, 401);
     private final TokenAuthFilter tokenAuthFilter;
 
     @Bean
@@ -37,7 +40,7 @@ public class SecurityConfig {
                 .logout(logout -> logout.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login").permitAll()
-                        .requestMatchers("/logout").hasAnyAuthority("VALID_TOKEN")
+                        .requestMatchers("/logout").hasAnyAuthority(AuthRole.TOKEN.role)
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(
@@ -47,14 +50,17 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .exceptionHandling(e -> e
-                        .authenticationEntryPoint((request, response, ae) -> {
-                            log.warn("Unauthorized request: {}",
-                                    request.getRequestURI());
-                            response.sendError(401,
-                                    ErrorMessages.ERR_TOKEN.message);
+                        .authenticationEntryPoint((request, response, ex) -> {
+                            log.warn("Auth failed for {}", request.getRequestURI());
+                            ResponseUtils.sendErrorResponse(
+                                    response,
+                                    errorResponse.getCode(),
+                                    errorResponse.getMessage());
                         })
                 );
         log.debug("Security initialization complete");
         return http.build();
     }
+
+
 }

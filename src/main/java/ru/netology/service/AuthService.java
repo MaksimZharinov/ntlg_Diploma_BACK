@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.netology.constant.ErrorMessages;
 import ru.netology.dto.LoginRequest;
 import ru.netology.error.BadRequestException;
+import ru.netology.error.UnauthorizedException;
 import ru.netology.repository.AuthRepository;
 
 import java.util.UUID;
@@ -26,8 +27,7 @@ public class AuthService {
     public String login(LoginRequest loginRequest) {
 
         authRepository.refreshToken(loginRequest.getLogin());
-
-        log.debug("Input password: {}", loginRequest.getPassword());
+        
         String dbPassword = authRepository.getPassword(loginRequest.getLogin());
         log.debug("DB Password: {}", dbPassword);
 
@@ -50,7 +50,8 @@ public class AuthService {
     public void logout(String token) {
         log.debug("Logout for token: {}", token);
         if (!authRepository.dropToken(token)) {
-            log.warn("Token not found during logout: {}", token);
+            log.warn("Token not found: {}", token);
+            throw new UnauthorizedException(ErrorMessages.ERR_TOKEN.message);
         }
     }
 
