@@ -46,14 +46,13 @@ public class FileService {
         if (!checkFilename(filename)) {
             throw new BadRequestException(ErrorMessages.ERR_INPUT.message);
         }
-        byte[] fileData = fileRepository.getFile(token, filename);
-        if (fileData == null) {
+        FileDownloadResponse file = fileRepository.getFile(token, filename);
+        if (file.getFile() == null) {
             log.warn("File not found: token={}, filename={}", token, filename);
             throw new ServerErrorException(ErrorMessages.ERR_UPLOAD.message);
         }
-        String hash = calculateSHA256(fileData);
         log.info("File downloaded: token={}, filename={}", token, filename);
-        return new FileDownloadResponse(hash, fileData);
+        return file;
     }
 
     public void deleteFile(String token, String filename) {

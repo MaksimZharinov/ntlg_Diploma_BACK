@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.netology.constant.ErrorMessages;
 import ru.netology.constant.SqlQueries;
+import ru.netology.dto.FileDownloadResponse;
 import ru.netology.dto.FileListResponse;
 import ru.netology.error.UnauthorizedException;
 
@@ -32,7 +33,7 @@ public class FileRepository {
         );
     }
 
-    public byte[] getFile(String token, String filename) {
+    public FileDownloadResponse getFile(String token, String filename) {
         String login = getLogin(token);
         if (login == null) {
             log.warn("Invalid token {}", token);
@@ -41,7 +42,11 @@ public class FileRepository {
         log.debug("Getting file in DB {}", filename);
         return jdbcTemplate.queryForObject(
                 SqlQueries.GET_FILE.query,
-                byte[].class, login, filename
+                (rs, rowNum) -> new FileDownloadResponse(
+                        rs.getString("hash"),
+                        rs.getBytes("file_data")
+                ),
+                login, filename
         );
     }
 

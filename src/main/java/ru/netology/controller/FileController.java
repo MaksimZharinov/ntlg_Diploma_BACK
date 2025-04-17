@@ -2,6 +2,7 @@ package ru.netology.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,6 +23,7 @@ public class FileController {
     @PostMapping(
             value = "/file",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.OK)
     public void uploadFile(
             @RequestHeader("auth-token") String token,
             @RequestParam(
@@ -33,7 +35,10 @@ public class FileController {
         fileService.uploadFile(token, filename, file);
     }
 
-    @GetMapping(value = "/file", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @GetMapping(
+            value = "/file",
+            produces = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.OK)
     public FileDownloadResponse downloadFile(
             @RequestHeader("auth-token") String token,
             @RequestParam(
@@ -45,6 +50,7 @@ public class FileController {
     }
 
     @DeleteMapping("/file")
+    @ResponseStatus(HttpStatus.OK)
     public void deleteFile(
             @RequestHeader("auth-token") String token,
             @RequestParam("filename") String filename
@@ -54,6 +60,7 @@ public class FileController {
     }
 
     @PutMapping("/file")
+    @ResponseStatus(HttpStatus.OK)
     public void editFilename(
             @RequestHeader("auth-token") String token,
             @RequestParam(
@@ -66,6 +73,7 @@ public class FileController {
     }
 
     @GetMapping("/list")
+    @ResponseStatus(HttpStatus.OK)
     public List<FileListResponse> getFileList(
             @RequestHeader("auth-token") String token,
             @RequestParam(value = "limit", defaultValue = "10") int limit

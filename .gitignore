@@ -5,5 +5,5 @@ target/
 *.class
 
 *.log
-
-test.txt
+*.txt
+*.jpeg

@@ -18,7 +18,7 @@ public enum SqlQueries {
     REFRESH_TOKEN("DELETE FROM auth_tokens WHERE user_name = ?"),
 
     //file
-    GET_FILE("SELECT file_data, filename " +
+    GET_FILE("SELECT file_data, hash " +
             "FROM netology.files " +
             "WHERE user_name = ? AND filename = ?"),
     SAVE_FILE("INSERT INTO netology.files " +
