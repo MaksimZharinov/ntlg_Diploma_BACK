@@ -28,7 +28,9 @@ public enum SqlQueries {
             "WHERE user_name = ? AND filename = ?"),
     GET_FILE_LIST("SELECT filename, size " +
             "FROM netology.files " +
-            "WHERE user_name = ? ORDER BY filename LIMIT ?");
+            "WHERE user_name = ? ORDER BY filename LIMIT ?"),
+    RENAME_FILE("UPDATE netology.files " +
+            "SET filename = ? WHERE user_name = ? AND filename = ?");
 
     public final String query;
 

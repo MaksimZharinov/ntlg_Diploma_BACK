@@ -67,6 +67,15 @@ public class FileRepository {
         );
     }
 
+    public boolean renameFile(String token, String filename, String newFilename) {
+        String login = getLogin(token);
+        log.debug("Renaming file in DB {}", filename);
+        return jdbcTemplate.update(
+                SqlQueries.RENAME_FILE.query,
+                newFilename, login, filename
+        ) > 0;
+    }
+
     private String getLogin(String token) {
         return jdbcTemplate.queryForObject(
                 SqlQueries.GET_LOGIN_BY_TOKEN.query,

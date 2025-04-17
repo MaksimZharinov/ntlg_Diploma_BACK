@@ -67,6 +67,18 @@ public class FileService {
         return fileRepository.getFileList(token, limit);
     }
 
+    public void renameFile(String token, String filename, String newFilename) {
+        if (newFilename == null || newFilename.isEmpty()) {
+            log.warn("Empty filename");
+            throw new BadRequestException(ErrorMessages.ERR_INPUT.message);
+        }
+        if (!fileRepository.renameFile(token, filename, newFilename)) {
+            log.warn("Error rename file");
+            throw new ServerErrorException(ErrorMessages.ERR_UPLOAD.message);
+        }
+        log.info("File renamed: {} -> {}", filename, newFilename);
+    }
+
     private String calculateSHA256(byte[] bytes) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");

@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.netology.dto.FileDownloadResponse;
 import ru.netology.dto.FileListResponse;
+import ru.netology.dto.FileRenameRequest;
 import ru.netology.service.FileService;
 
 import java.util.List;
@@ -46,6 +47,16 @@ public class FileController {
     ) {
         log.info("Delete file: {}", filename);
         fileService.deleteFile(token, filename);
+    }
+
+    @PutMapping("/file")
+    public void editFilename(
+            @RequestHeader("auth-token") String token,
+            @RequestParam("filename") String filename,
+            @RequestBody FileRenameRequest request
+    ) {
+        log.info("Rename file: {} -> {}", filename, request.getName());
+        fileService.renameFile(token, filename, request.getName());
     }
 
     @GetMapping("/list")
