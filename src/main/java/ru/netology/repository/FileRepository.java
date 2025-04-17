@@ -4,8 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.netology.constant.ErrorMessages;
 import ru.netology.constant.SqlQueries;
 import ru.netology.dto.FileListResponse;
+import ru.netology.error.UnauthorizedException;
 
 import java.util.List;
 
@@ -17,12 +19,12 @@ public class FileRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public void saveFile(
-            String login,
+            String token,
             String filename,
             byte[] fileData,
             String hash,
-            long size)
-    {
+            long size) {
+        String login = getLogin(token);
         log.debug("Saving file in DB {}", filename);
         jdbcTemplate.update(
                 SqlQueries.SAVE_FILE.query,
@@ -30,7 +32,12 @@ public class FileRepository {
         );
     }
 
-    public byte[] getFile(String login, String filename) {
+    public byte[] getFile(String token, String filename) {
+        String login = getLogin(token);
+        if (login == null) {
+            log.warn("Invalid token {}", token);
+            throw new UnauthorizedException(ErrorMessages.ERR_TOKEN.message);
+        }
         log.debug("Getting file in DB {}", filename);
         return jdbcTemplate.queryForObject(
                 SqlQueries.GET_FILE.query,
@@ -38,7 +45,8 @@ public class FileRepository {
         );
     }
 
-    public boolean deleteFile(String login, String filename) {
+    public boolean deleteFile(String token, String filename) {
+        String login = getLogin(token);
         log.debug("Deleting file in DB {}", filename);
         return jdbcTemplate.update(
                 SqlQueries.DELETE_FILE.query,
@@ -46,7 +54,8 @@ public class FileRepository {
         ) > 0;
     }
 
-    public List<FileListResponse> getFileList(String login, int limit) {
+    public List<FileListResponse> getFileList(String token, int limit) {
+        String login = getLogin(token);
         log.debug("Getting file list in DB for user: {}", login);
         return jdbcTemplate.query(
                 SqlQueries.GET_FILE_LIST.query,
@@ -56,5 +65,12 @@ public class FileRepository {
                 ),
                 login, limit
         );
+    }
+
+    private String getLogin(String token) {
+        return jdbcTemplate.queryForObject(
+                SqlQueries.GET_LOGIN_BY_TOKEN.query,
+                String.class,
+                token);
     }
 }
