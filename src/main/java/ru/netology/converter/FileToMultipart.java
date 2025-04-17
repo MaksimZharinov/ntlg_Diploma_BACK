@@ -1,5 +1,6 @@
 package ru.netology.converter;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -49,12 +50,16 @@ public class FileToMultipart implements HttpMessageConverter<FileDownloadRespons
     )
             throws IOException, HttpMessageNotWritableException {
 
-        OutputStream os = outputMessage.getBody();
+        HttpHeaders headers = new HttpHeaders();
         String boundary = "netology";
-        outputMessage
-                .getHeaders()
+        headers
                 .setContentType(MediaType
                         .parseMediaType("multipart/form-data; boundary=" + boundary));
+
+        OutputStream os = outputMessage.getBody();
+
+        outputMessage.getHeaders().clear();
+        outputMessage.getHeaders().putAll(headers);
 
         os.write(("--" + boundary + "\r\n").getBytes());
         os.write("Content-Disposition: form-data; name=\"hash\"\r\n\r\n".getBytes());
