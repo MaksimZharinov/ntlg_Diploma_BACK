@@ -29,6 +29,8 @@ public enum SqlQueries {
     GET_FILE_LIST("SELECT filename, size " +
             "FROM netology.files " +
             "WHERE user_name = ? ORDER BY filename LIMIT ?"),
+    FILE_IS_EXIST("SELECT COUNT(*) " +
+            "FROM netology.files WHERE user_name = ? AND filename = ?"),
     RENAME_FILE("UPDATE netology.files " +
             "SET filename = ? WHERE user_name = ? AND filename = ?");
 

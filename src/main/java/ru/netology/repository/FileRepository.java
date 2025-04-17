@@ -87,4 +87,13 @@ public class FileRepository {
                 String.class,
                 token);
     }
+
+    public boolean checkFile(String token, String filename) {
+        String login = getLogin(token);
+        return jdbcTemplate.queryForObject(
+                SqlQueries.FILE_IS_EXIST.query,
+                Integer.class,
+                login, filename
+        ) > 0;
+    }
 }

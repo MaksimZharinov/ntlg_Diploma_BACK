@@ -46,6 +46,9 @@ public class FileService {
         if (!checkFilename(filename)) {
             throw new BadRequestException(ErrorMessages.ERR_INPUT.message);
         }
+        if (!fileRepository.checkFile(token, filename)) {
+            throw new ServerErrorException(ErrorMessages.ERR_UPLOAD.message);
+        }
         FileDownloadResponse file = fileRepository.getFile(token, filename);
         if (file.getFile() == null) {
             log.warn("File not found: token={}, filename={}", token, filename);

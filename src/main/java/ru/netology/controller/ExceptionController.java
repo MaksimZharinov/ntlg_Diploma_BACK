@@ -17,21 +17,21 @@ public class ExceptionController {
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleBadRequest(BadRequestException e) {
-        log.error(e.getMessage(), e);
+        log.error("BAD REQUEST: {}", e.getMessage());
         return new ErrorResponse(e.getMessage(), 400);
     }
 
     @ExceptionHandler(UnauthorizedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse handleUnauthorized(UnauthorizedException e) {
-        log.error(e.getMessage(), e);
+        log.error("UNAUTHORIZED ACCESS: {}", e.getMessage());
         return new ErrorResponse(e.getMessage(), 401);
     }
 
     @ExceptionHandler(ServerErrorException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleServerError(ServerErrorException e) {
-        log.error(e.getMessage(), e);
+        log.error("SERVER ERROR: {}", e.getMessage());
         return new ErrorResponse(e.getMessage(), 500);
     }
 }
