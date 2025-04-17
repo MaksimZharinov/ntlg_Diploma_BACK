@@ -13,7 +13,6 @@ import ru.netology.repository.FileRepository;
 
 import java.io.IOException;
 import java.security.MessageDigest;
-import java.util.Arrays;
 import java.util.HexFormat;
 import java.util.List;
 
@@ -25,8 +24,7 @@ public class FileService {
     private final FileRepository fileRepository;
 
     public void uploadFile(String token, String filename, MultipartFile file) {
-        if (filename == null || filename.isEmpty()) {
-            log.warn("Empty filename");
+        if (!checkFilename(filename)) {
             throw new BadRequestException(ErrorMessages.ERR_INPUT.message);
         }
         try {
@@ -45,6 +43,9 @@ public class FileService {
     }
 
     public FileDownloadResponse downloadFile(String token, String filename) {
+        if (!checkFilename(filename)) {
+            throw new BadRequestException(ErrorMessages.ERR_INPUT.message);
+        }
         byte[] fileData = fileRepository.getFile(token, filename);
         if (fileData == null) {
             log.warn("File not found: token={}, filename={}", token, filename);
@@ -69,8 +70,7 @@ public class FileService {
     }
 
     public void renameFile(String token, String filename, String newFilename) {
-        if (newFilename == null || newFilename.isEmpty()) {
-            log.warn("Empty filename");
+        if (!checkFilename(filename)) {
             throw new BadRequestException(ErrorMessages.ERR_INPUT.message);
         }
         if (!fileRepository.renameFile(token, filename, newFilename)) {
@@ -88,6 +88,14 @@ public class FileService {
         } catch (Exception e) {
             throw new ServerErrorException(ErrorMessages.ERR_HASH.message);
         }
+    }
+
+    private boolean checkFilename(String filename) {
+        if (filename == null || filename.isEmpty()) {
+            log.warn("Empty filename");
+            return false;
+        }
+        return true;
     }
 }
 

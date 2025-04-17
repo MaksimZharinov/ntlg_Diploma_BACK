@@ -24,7 +24,9 @@ public class FileController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public void uploadFile(
             @RequestHeader("auth-token") String token,
-            @RequestParam("filename") String filename,
+            @RequestParam(
+                    value = "filename",
+                    required = false) String filename,
             @RequestPart("file") MultipartFile file
     ) {
         log.info("Upload file: {}", filename);
@@ -34,7 +36,9 @@ public class FileController {
     @GetMapping(value = "/file", produces = MediaType.MULTIPART_FORM_DATA_VALUE)
     public FileDownloadResponse downloadFile(
             @RequestHeader("auth-token") String token,
-            @RequestParam("filename") String filename
+            @RequestParam(
+                    value = "filename",
+                    required = false) String filename
     ) {
         log.info("Download file: {}", filename);
         return fileService.downloadFile(token, filename);
@@ -52,7 +56,9 @@ public class FileController {
     @PutMapping("/file")
     public void editFilename(
             @RequestHeader("auth-token") String token,
-            @RequestParam("filename") String filename,
+            @RequestParam(
+                    value = "filename",
+                    required = false) String filename,
             @RequestBody FileRenameRequest request
     ) {
         log.info("Rename file: {} -> {}", filename, request.getName());
