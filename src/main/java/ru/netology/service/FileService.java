@@ -14,6 +14,7 @@ import ru.netology.repository.FileRepository;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.List;
 
 @Service
@@ -83,7 +84,7 @@ public class FileService {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest(bytes);
-            return Arrays.toString(hash);
+            return HexFormat.of().formatHex(hash);
         } catch (Exception e) {
             throw new ServerErrorException(ErrorMessages.ERR_HASH.message);
         }
