@@ -9,6 +9,7 @@ public enum ErrorMessages {
     ERR_TOKEN("Unauthorized error"),
 
     // 500
+    ERR_HASH("Hash calculation error"),
     ERR_DELETE("Error delete file"),
     ERR_UPLOAD("Error upload file");
 

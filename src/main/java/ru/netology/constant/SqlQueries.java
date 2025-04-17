@@ -5,6 +5,8 @@ public enum SqlQueries {
     //auth
     CHECK_PASSWORD("SELECT password " +
             "FROM netology.users WHERE login = ?"),
+    GET_LOGIN_BY_TOKEN("SELECT user_name " +
+            "FROM netology.auth_tokens WHERE token = ?"),
 
     //token
     CREATE_TOKEN("INSERT INTO netology.auth_tokens " +
