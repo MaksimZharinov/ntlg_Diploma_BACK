@@ -4,7 +4,6 @@ services:
   app:
     build: .
     image: diploma-back:latest
-    container_name: diploma-app
     ports:
       - "9090:9090"
     environment:
@@ -17,6 +16,7 @@ services:
 
   db:
     image: postgres:15-alpine
+    container_name: my-postgres
     environment:
       - POSTGRES_DB=netology
       - POSTGRES_USER=student
