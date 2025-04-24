@@ -3,6 +3,8 @@ version: '3.8'
 services:
   app:
     build: .
+    image: diploma-back:latest
+    container_name: diploma-app
     ports:
       - "9090:9090"
     environment:
@@ -22,7 +24,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U student -d netology"]
+      test: [ "CMD-SHELL", "pg_isready -U student -d netology" ]
       interval: 5s
       timeout: 5s
       retries: 5
