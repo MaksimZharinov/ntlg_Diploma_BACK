@@ -35,32 +35,36 @@ public class TokenAuthFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws IOException, ServletException {
-
         if (request.getRequestURI().equals("/login")) {
             filterChain.doFilter(request, response);
             return;
         }
-
         String token = request.getHeader("auth-token");
-        log.debug("Checking token for URL: {}", request.getRequestURI());
-
-        if (token == null || !authRepository.checkToken(token)) {
-            log.warn("Token INVALID for URL: {}", request.getRequestURI());
+        log.debug("Checking token for URL: {}",
+                request.getRequestURI());
+        if (token == null || !authRepository
+                .checkToken(token)) {
+            log.warn("Token INVALID for URL: {}",
+                    request.getRequestURI());
             ResponseUtils.sendErrorResponse(
                     response,
                     errorResponse.getCode(),
                     errorResponse.getMessage());
             return;
         } else {
-            log.debug("Token VALID for URL: {}", request.getRequestURI());
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+            log.debug("Token VALID for URL: {}",
+                    request.getRequestURI());
+            String login = authRepository.getLogin(token);
+            request.setAttribute("login", login);
+            UsernamePasswordAuthenticationToken
+                    auth = new UsernamePasswordAuthenticationToken(
                     "token_user",
                     null,
-                    List.of(new SimpleGrantedAuthority(AuthRole.TOKEN.role))
+                    List.of(new SimpleGrantedAuthority(
+                            AuthRole.TOKEN.role))
             );
             SecurityContextHolder.getContext().setAuthentication(auth);
         }
-
         filterChain.doFilter(request, response);
     }
 }
