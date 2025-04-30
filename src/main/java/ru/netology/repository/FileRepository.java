@@ -2,13 +2,11 @@ package ru.netology.repository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.netology.constant.ErrorMessages;
 import ru.netology.constant.SqlQueries;
-import ru.netology.dto.FileDownloadResponse;
-import ru.netology.dto.FileListResponse;
-import ru.netology.error.UnauthorizedException;
+import ru.netology.model.File;
 
 import java.util.List;
 
@@ -19,52 +17,51 @@ public class FileRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public void saveFile(
-            String token,
-            String filename,
-            byte[] fileData,
-            String hash,
-            long size) {
-        String login = getLogin(token);
-        log.debug("Saving file in DB {}", filename);
-        jdbcTemplate.update(
+    public boolean saveFile(String login, File file) {
+        log.debug("Saving file in DB {}",
+                file.getFilename());
+        return jdbcTemplate.update(
                 SqlQueries.SAVE_FILE.query,
-                login, filename, fileData, hash, size
-        );
+                login,
+                file.getFilename(),
+                file.getFileData(),
+                file.getHash(),
+                file.getSize()) > 0;
     }
 
-    public FileDownloadResponse getFile(String token, String filename) {
-        String login = getLogin(token);
-        if (login == null) {
-            log.warn("Invalid token {}", token);
-            throw new UnauthorizedException(ErrorMessages.ERR_TOKEN.message);
+    public File getFile(String login, String filename) {
+        log.debug("Getting file in DB {}",
+                filename);
+        try {
+            return jdbcTemplate.queryForObject(
+                    SqlQueries.GET_FILE.query,
+                    (rs, rowNum) -> new File(
+                            rs.getString("filename"),
+                            rs.getBytes("file_data"),
+                            rs.getString("hash"),
+                            rs.getLong("size")
+                    ),
+                    login, filename
+            );
+        } catch (EmptyResultDataAccessException e) {
+            return null;
         }
-        log.debug("Getting file in DB {}", filename);
-        return jdbcTemplate.queryForObject(
-                SqlQueries.GET_FILE.query,
-                (rs, rowNum) -> new FileDownloadResponse(
-                        rs.getString("hash"),
-                        rs.getBytes("file_data")
-                ),
-                login, filename
-        );
     }
 
-    public boolean deleteFile(String token, String filename) {
-        String login = getLogin(token);
-        log.debug("Deleting file in DB {}", filename);
+    public boolean deleteFile(String login, String filename) {
+        log.debug("Deleting file in DB {}",
+                filename);
         return jdbcTemplate.update(
                 SqlQueries.DELETE_FILE.query,
-                login, filename
-        ) > 0;
+                login, filename) > 0;
     }
 
-    public List<FileListResponse> getFileList(String token, int limit) {
-        String login = getLogin(token);
-        log.debug("Getting file list in DB for user: {}", login);
+    public List<File> getFileList(String login, int limit) {
+        log.debug("Getting file list in DB for user: {}",
+                login);
         return jdbcTemplate.query(
                 SqlQueries.GET_FILE_LIST.query,
-                (rs, rowNum) -> new FileListResponse(
+                (rs, rowNum) -> new File(
                         rs.getString("filename"),
                         rs.getLong("size")
                 ),
@@ -72,28 +69,15 @@ public class FileRepository {
         );
     }
 
-    public boolean renameFile(String token, String filename, String newFilename) {
-        String login = getLogin(token);
-        log.debug("Renaming file in DB {}", filename);
+    public boolean renameFile(
+            String login,
+            String filename,
+            String newFilename
+    ) {
+        log.debug("Renaming file in DB {}",
+                filename);
         return jdbcTemplate.update(
                 SqlQueries.RENAME_FILE.query,
-                newFilename, login, filename
-        ) > 0;
-    }
-
-    private String getLogin(String token) {
-        return jdbcTemplate.queryForObject(
-                SqlQueries.GET_LOGIN_BY_TOKEN.query,
-                String.class,
-                token);
-    }
-
-    public boolean checkFile(String token, String filename) {
-        String login = getLogin(token);
-        return jdbcTemplate.queryForObject(
-                SqlQueries.FILE_IS_EXIST.query,
-                Integer.class,
-                login, filename
-        ) > 0;
+                newFilename, login, filename) > 0;
     }
 }

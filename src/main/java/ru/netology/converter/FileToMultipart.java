@@ -50,25 +50,21 @@ public class FileToMultipart implements HttpMessageConverter<FileDownloadRespons
     )
             throws IOException, HttpMessageNotWritableException {
 
-        String boundary = "netology";
+        String boundary = "netology_jd_66_zharinoff";
 
-        // Напрямую выводим multipart-формат
         OutputStream os = outputMessage.getBody();
 
-        // Первый блок: хэш
         os.write(("--" + boundary + "\r\n").getBytes());
         os.write("Content-Disposition: form-data; name=\"hash\"\r\n\r\n".getBytes());
         os.write(file.getHash().getBytes());
         os.write("\r\n".getBytes());
 
-        // Второй блок: файл
         os.write(("--" + boundary + "\r\n").getBytes());
         os.write("Content-Disposition: form-data; name=\"file\"\r\n".getBytes());
         os.write("Content-Type: application/octet-stream\r\n\r\n".getBytes());
         os.write(file.getFile());
         os.write("\r\n".getBytes());
 
-        // Заканчиваем multipart
         os.write(("--" + boundary + "--\r\n").getBytes());
     }
 }
