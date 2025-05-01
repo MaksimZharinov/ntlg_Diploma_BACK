@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import ru.netology.constant.ErrorMessages;
 import ru.netology.dto.FileDownloadResponse;
+import ru.netology.dto.FileListResponse;
 import ru.netology.dto.FileRenameRequest;
 import ru.netology.error.BadRequestException;
 import ru.netology.error.ServerErrorException;
@@ -17,8 +18,10 @@ import ru.netology.model.File;
 import ru.netology.service.FileService;
 
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @Slf4j
@@ -103,7 +106,7 @@ public class FileController {
 
     @GetMapping("/list")
     @ResponseStatus(HttpStatus.OK)
-    public List<File> getFileList(
+    public List<FileListResponse> getFileList(
             HttpServletRequest request,
             @RequestParam(
                     value = "limit",
@@ -112,7 +115,13 @@ public class FileController {
         String login = (String) request.getAttribute("login");
         log.info("Get files list, limit: {}",
                 limit);
-        return fileService.getFileList(login, limit);
+        List<File> list = fileService.getFileList(login, limit);
+        return list.stream()
+                .map(file ->
+                        new FileListResponse(
+                                file.getFilename(),
+                                file.getSize()))
+                .toList();
     }
 
     private void checkFilename(String filename) {
