@@ -39,7 +39,14 @@ public class TokenAuthFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         String token = request.getHeader("auth-token");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
         log.debug("Checking token for URL: {}",
                 request.getRequestURI());
         if (token == null || !authRepository
