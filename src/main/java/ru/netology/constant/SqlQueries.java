@@ -17,7 +17,7 @@ public enum SqlQueries {
             "WHERE user_name = ?"),
 
     //file
-    GET_FILE("SELECT file_data, hash " +
+    GET_FILE("SELECT filename, file_data, hash, size " +
             "FROM netology.files " +
             "WHERE user_name = ? AND filename = ?"),
     SAVE_FILE("INSERT INTO netology.files " +
