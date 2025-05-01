@@ -50,8 +50,10 @@ public class TokenAuthFilterTest {
     void doFilterBlockMissingToken() throws Exception {
 
         StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        FilterChain mockChain = mock(FilterChain.class);
         when(response.getWriter())
-                .thenReturn(new PrintWriter(stringWriter));
+                .thenReturn(printWriter);
         when(request.getRequestURI())
                 .thenReturn("/file");
         when(request.getHeader("auth-token"))
@@ -60,7 +62,7 @@ public class TokenAuthFilterTest {
         tokenAuthFilter.doFilterInternal(
                 request,
                 response,
-                mock(FilterChain.class));
+                mockChain);
 
         verify(response).setStatus(401);
         assertTrue(stringWriter
@@ -72,8 +74,10 @@ public class TokenAuthFilterTest {
     void doFilterBlockInvalidToken() throws Exception {
 
         StringWriter stringWriter = new StringWriter();
+        PrintWriter printWriter = new PrintWriter(stringWriter);
+        FilterChain mockChain = mock(FilterChain.class);
         when(response.getWriter())
-                .thenReturn(new PrintWriter(stringWriter));
+                .thenReturn(printWriter);
         when(request.getRequestURI())
                 .thenReturn("/file");
         when(request.getHeader("auth-token"))
@@ -85,7 +89,7 @@ public class TokenAuthFilterTest {
         tokenAuthFilter.doFilterInternal(
                 request,
                 response,
-                mock(FilterChain.class));
+                mockChain);
 
         verify(response).setStatus(401);
         verify(authRepository).checkToken("invalid_token");

@@ -5,11 +5,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.web.multipart.MultipartFile;
-import ru.netology.dto.FileDownloadResponse;
-import ru.netology.dto.FileListResponse;
-import ru.netology.error.BadRequestException;
 import ru.netology.error.ServerErrorException;
+import ru.netology.model.File;
 import ru.netology.repository.FileRepository;
 
 import java.io.IOException;
@@ -29,123 +26,108 @@ public class FileServiceTest {
     @Test
     void uploadFileWhenValid() throws IOException {
 
-        MultipartFile file = mock(MultipartFile.class);
-        when(file.getBytes()).thenReturn(new byte[]{1, 2, 3});
-        when(file.getSize()).thenReturn(3L);
-        doNothing().when(fileRepository)
-                .saveFile(any(), any(), any(), any(), anyLong());
+        File file = mock(File.class);
+        when(fileRepository.saveFile(any(), any()))
+                .thenReturn(true);
 
-        fileService.uploadFile(
-                "valid_token",
-                "test.txt",
-                file);
+        fileService
+                .uploadFile("login", file);
 
-        verify(fileRepository).saveFile(
-                eq("valid_token"),
-                eq("test.txt"),
-                any(),
-                anyString(),
-                eq(3L)
-        );
-    }
-
-    @Test
-    void uploadFilThrowExceptionFilenameEmpty() {
-
-        assertThrows(BadRequestException.class, () ->
-                fileService.uploadFile(
-                        "token",
-                        "",
-                        mock(MultipartFile.class)));
-        verifyNoInteractions(fileRepository);
+        verify(fileRepository)
+                .saveFile(eq("login"), eq(file));
     }
 
     @Test
     void downloadFileReturnFile() {
 
-        when(fileRepository.checkFile(
-                "token",
-                "test.txt"))
-                .thenReturn(true);
+        File file = mock(File.class);
+        when(file.getFilename())
+                .thenReturn("filename");
+        when(file.getFileData())
+                .thenReturn(new byte[]{1, 2, 3});
+        when(file.getHash())
+                .thenReturn("hash");
+        when(file.getSize())
+                .thenReturn(3L);
         when(fileRepository.getFile(
-                "token",
-                "test.txt"))
-                .thenReturn(new FileDownloadResponse(
-                        "hash",
-                        new byte[]{1, 2, 3}));
+                "login",
+                "filename"))
+                .thenReturn(file);
 
-        FileDownloadResponse response = fileService
-                .downloadFile("token", "test.txt");
+        File downloadFile = fileService
+                .downloadFile("login", "filename");
 
-        assertEquals("hash", response.getHash());
-        assertArrayEquals(new byte[]{1, 2, 3}, response.getFile());
+        assertEquals("filename", downloadFile.getFilename());
+        assertArrayEquals(new byte[]{1, 2, 3}, downloadFile.getFileData());
+        assertEquals("hash", downloadFile.getHash());
+        assertEquals(3L, downloadFile.getSize());
     }
 
     @Test
     void downloadFileThrowExceptionFileNotFound() {
 
-        when(fileRepository.checkFile(
-                "token",
-                "unknown.txt"))
-                .thenReturn(false);
+        when(fileRepository.getFile(
+                "login",
+                "notExistFilename"))
+                .thenReturn(null);
 
         assertThrows(ServerErrorException.class, () ->
                 fileService.downloadFile(
-                        "token",
-                        "unknown.txt"));
+                        "login",
+                        "notExistFilename"));
     }
 
     @Test
     void deleteFileOk() {
 
         when(fileRepository.deleteFile(
-                "token",
-                "test.txt"))
+                "login",
+                "filename"))
                 .thenReturn(true);
 
         assertDoesNotThrow(() -> fileService.deleteFile(
-                "token",
-                "test.txt"));
+                "login",
+                "filename"));
         verify(fileRepository).deleteFile(
-                "token",
-                "test.txt");
+                "login",
+                "filename");
     }
 
     @Test
     void deleteFileThrowExceptionFileNotExists() {
 
         when(fileRepository.deleteFile(
-                "token",
-                "unknown.txt"))
+                "login",
+                "notExistFilename"))
                 .thenReturn(false);
 
         assertThrows(ServerErrorException.class, () ->
                 fileService.deleteFile(
-                        "token",
-                        "unknown.txt"));
+                        "login",
+                        "notExistFilename"));
     }
 
     @Test
     void getFileListReturnList() {
 
-        List<FileListResponse> mockList = List.of(
-                new FileListResponse(
-                        "file1.txt",
-                        100),
-                new FileListResponse(
-                        "file2.txt",
-                        200)
+        List<File> mockList = List.of(
+                new File(
+                        "filename1",
+                        100L),
+                new File(
+                        "filename2",
+                        200L)
         );
         when(fileRepository.getFileList(
-                "token",
+                "login",
                 10))
                 .thenReturn(mockList);
 
-        List<FileListResponse> result = fileService.getFileList(
-                "token",
+        List<File> result = fileService.getFileList(
+                "login",
                 10);
 
         assertEquals(2, result.size());
-        assertEquals("file1.txt", result.get(0).getFilename());
+        assertEquals("filename1", result.get(0).getFilename());
     }
 }

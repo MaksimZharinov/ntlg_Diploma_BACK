@@ -7,9 +7,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import ru.netology.constant.ErrorMessages;
-import ru.netology.dto.LoginRequest;
 import ru.netology.error.BadRequestException;
 import ru.netology.error.UnauthorizedException;
+import ru.netology.model.User;
 import ru.netology.repository.AuthRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,10 +29,10 @@ public class AuthServiceTest {
     @Test
     void loginReturnTokenWhenCredentialIsValid() {
 
-        LoginRequest request = new LoginRequest();
-        request.setLogin("user");
-        request.setPassword("password");
-        when(authRepository.getPassword("user"))
+        User user = new User(
+                "user",
+                "password");
+        when(authRepository.getPassword(user.getLogin()))
                 .thenReturn("encodePassword");
         when(passwordEncoder.matches(
                 "password",
@@ -41,33 +41,37 @@ public class AuthServiceTest {
         doNothing().when(authRepository)
                 .saveToken(any(), any());
 
-        String token = authService.login(request);
+        String token = authService.login(user);
 
         assertNotNull(token);
-        verify(authRepository).getPassword("user");
-        verify(authRepository).refreshToken("user");
-        verify(authRepository).saveToken(eq("user"), eq(token));
+        verify(authRepository)
+                .getPassword("user");
+        verify(authRepository)
+                .dropToken("user");
+        verify(authRepository)
+                .saveToken(eq("user"), eq(token));
     }
 
     @Test
     void loginThrowExceptionInvalidUsername() {
 
-        LoginRequest request = new LoginRequest();
-        request.setLogin("unknown");
-        request.setPassword("password");
-        when(authRepository.getPassword("unknown")).thenThrow(
-                new BadRequestException(ErrorMessages.ERR_LOGIN.message));
+        User user = new User(
+                "unknown",
+                "password");
+        when(authRepository.getPassword("unknown"))
+                .thenThrow(new BadRequestException(
+                        ErrorMessages.ERR_LOGIN.message));
 
         assertThrows(BadRequestException.class, () ->
-                authService.login(request));
+                authService.login(user));
     }
 
     @Test
     void loginThrowExceptionInvalidPassword() {
 
-        LoginRequest request = new LoginRequest();
-        request.setLogin("user");
-        request.setPassword("wrongPassword");
+        User user = new User(
+                "user",
+                "wrongPassword");
         when(authRepository.getPassword("user"))
                 .thenReturn("encodePassword");
         when(passwordEncoder.matches(
@@ -76,41 +80,28 @@ public class AuthServiceTest {
                 .thenReturn(false);
 
         assertThrows(BadRequestException.class, () ->
-                authService.login(request));
+                authService.login(user));
     }
 
     @Test
     void logoutDeleteToken() {
 
-        when(authRepository.dropToken("valid_token")).thenReturn(true);
+        when(authRepository.dropToken("valid_token"))
+                .thenReturn(true);
 
-        assertDoesNotThrow(() -> authService.logout("valid_token"));
-        verify(authRepository).dropToken("valid_token");
+        assertDoesNotThrow(() -> authService
+                .logout("valid_token"));
+        verify(authRepository)
+                .dropToken("valid_token");
     }
 
     @Test
     void logoutThrowExceptionInvalidToken() {
 
-        when(authRepository.dropToken("invalid")).thenReturn(false);
+        when(authRepository.dropToken("invalid"))
+                .thenReturn(false);
 
         assertThrows(UnauthorizedException.class, () ->
                 authService.logout("invalid"));
     }
-
-    @Test
-    void checkTokenTrueValidToken() {
-
-        when(authRepository.checkToken("valid")).thenReturn(true);
-
-        assertTrue(authService.checkToken("valid"));
-    }
-
-    @Test
-    void checkTokenFalseInvalidToken() {
-
-        when(authRepository.checkToken("invalid")).thenReturn(false);
-
-        assertFalse(authService.checkToken("invalid"));
-    }
-
 }
